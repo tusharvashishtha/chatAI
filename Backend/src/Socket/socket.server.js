@@ -1,32 +1,69 @@
 const { Server } = require("socket.io");
-const cookie = require('cookie');
-const jwt = require('jsonwebtoken');
+const cookie = require("cookie");
+const jwt = require("jsonwebtoken");
 const userModel = require("../Model/user.model");
+const aiService = require("../service/ai.service");
+const messageModel = require("../Model/message.model");
 
 function initSocketServer(httpServer) {
   const io = new Server(httpServer, {});
 
-  io.use(async(socket , next) => {
+  io.use(async (socket, next) => {
     const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
-    console.log("socket connection cookies", cookies)
-    if(!cookies.token){
-       next(new Error("Authentication error : No token provided"))
+
+    if (!cookies.token) {
+      return next(new Error("Authentication error: No token provided"));
     }
 
-    try{
+    try {
       const decoded = jwt.verify(cookies.token, process.env.JWT_SECRETKEY);
       const user = await userModel.findById(decoded.id);
+
+      if (!user) {
+        return next(new Error("Authentication error: User not found"));
+      }
+
       socket.user = user;
       next();
-    }catch(err){
-      next(new Error("Authentication error : Invalid token"))
+    } catch (err) {
+      return next(new Error("Authentication error: Invalid token"));
     }
-  })
+  });
 
   io.on("connection", (socket) => {
-    socket.on("ai-message", async(messagePayload) => {
-      console.log(messagePayload)
-    })
+    socket.on("ai-message", async (messagePayload) => {
+      try {
+        if (!messagePayload?.content || !messagePayload?.chat) return;
+
+        await messageModel.create({
+          chat: messagePayload.chat,
+          user: socket.user._id,
+          content: messagePayload.content,
+          role: "user",
+        });
+
+        const response = await aiService.generateResponse(
+          messagePayload.content
+        );
+
+        await messageModel.create({
+          chat: messagePayload.chat,
+          user: socket.user._id,
+          content: response,
+          role: "model",
+        });
+
+        socket.emit("ai-response", {
+          content: response,
+          chat: messagePayload.chat,
+        });
+      } catch (error) {
+        socket.emit("ai-response", {
+          content: "AI service error. Please try again.",
+          chat: messagePayload.chat,
+        });
+      }
+    });
   });
 }
 
