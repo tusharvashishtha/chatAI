@@ -35,6 +35,7 @@ function initSocketServer(httpServer) {
       try {
         if (!messagePayload?.content || !messagePayload?.chat) return;
 
+        // Save user message first
         await messageModel.create({
           chat: messagePayload.chat,
           user: socket.user._id,
@@ -42,21 +43,17 @@ function initSocketServer(httpServer) {
           role: "user",
         });
 
-        const chatHistory = await messageModel.find({
-          chat : messagePayload.chat
-        })
+        // Fetch UPDATED chat history AFTER saving user message
+        const chatHistory = (await messageModel
+          .find({ chat: messagePayload.chat })
+          .sort({ createdAt: -1 })
+          .limit(4)
+          .lean()).reverse();
 
-        console.log("chat history : ", chatHistory.map(item => {
-          return {
-            role : item.role,
-            parts : [{test : item.content}]
-          }
-        }))
+        // Generate AI response with full context
+        const response = await aiService.generateResponse(chatHistory);
 
-        const response = await aiService.generateResponse(
-          messagePayload.content
-        );
-
+        // Save AI response
         await messageModel.create({
           chat: messagePayload.chat,
           user: socket.user._id,
@@ -69,6 +66,7 @@ function initSocketServer(httpServer) {
           chat: messagePayload.chat,
         });
       } catch (error) {
+        console.error("Socket error:", error);
         socket.emit("ai-response", {
           content: "AI service error. Please try again.",
           chat: messagePayload.chat,
