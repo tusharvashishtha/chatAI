@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../Model/user.model");
 const aiService = require("../service/ai.service");
 const messageModel = require("../Model/message.model");
+const { createMemory, queryMemory } = require("../service/vector.service");
 
 function initSocketServer(httpServer) {
   const io = new Server(httpServer, {});
@@ -12,7 +13,7 @@ function initSocketServer(httpServer) {
     const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
 
     if (!cookies.token) {
-      return next(new Error("Authentication error: No token provided"));
+      return next(new Error("Authentication error"));
     }
 
     try {
@@ -20,22 +21,23 @@ function initSocketServer(httpServer) {
       const user = await userModel.findById(decoded.id);
 
       if (!user) {
-        return next(new Error("Authentication error: User not found"));
+        return next(new Error("Authentication error"));
       }
 
       socket.user = user;
       next();
     } catch (err) {
-      return next(new Error("Authentication error: Invalid token"));
+      return next(new Error("Authentication error"));
     }
   });
 
   io.on("connection", (socket) => {
+    console.log("Socket connected:", socket.id);
+
     socket.on("ai-message", async (messagePayload) => {
       try {
         if (!messagePayload?.content || !messagePayload?.chat) return;
 
-        // Save user message first
         await messageModel.create({
           chat: messagePayload.chat,
           user: socket.user._id,
@@ -43,21 +45,31 @@ function initSocketServer(httpServer) {
           role: "user",
         });
 
-        // Fetch UPDATED chat history AFTER saving user message
-        const chatHistory = (await messageModel
-          .find({ chat: messagePayload.chat })
-          .sort({ createdAt: -1 })
-          .limit(20)
-          .lean()).reverse();
+        const vectors = await aiService.generateVector(messagePayload.content);
+        console.log(vectors)
+        await createMemory({
+          vectors,
+          messageId: "77777",
+          metadata : {
+            chat: messagePayload.chat,
+            user: socket.user._id
+          }
+        })
 
-        // Generate AI response with full context
+        const chatHistory = (
+          await messageModel
+            .find({ chat: messagePayload.chat })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .lean()
+        ).reverse();
+
         const response = await aiService.generateResponse(chatHistory);
 
-        // Save AI response 
         await messageModel.create({
           chat: messagePayload.chat,
           user: socket.user._id,
-          content: response, 
+          content: response,
           role: "model",
         });
 
@@ -66,7 +78,7 @@ function initSocketServer(httpServer) {
           chat: messagePayload.chat,
         });
       } catch (error) {
-        console.error("Socket error:", error);
+        console.error(error);
         socket.emit("ai-response", {
           content: "AI service error. Please try again.",
           chat: messagePayload.chat,
