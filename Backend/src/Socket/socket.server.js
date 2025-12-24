@@ -47,17 +47,17 @@ function initSocketServer(httpServer) {
         const chatHistory = (await messageModel
           .find({ chat: messagePayload.chat })
           .sort({ createdAt: -1 })
-          .limit(4)
+          .limit(20)
           .lean()).reverse();
 
         // Generate AI response with full context
         const response = await aiService.generateResponse(chatHistory);
 
-        // Save AI response
+        // Save AI response 
         await messageModel.create({
           chat: messagePayload.chat,
           user: socket.user._id,
-          content: response,
+          content: response, 
           role: "model",
         });
 
