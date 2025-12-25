@@ -10,24 +10,18 @@ function initSocketServer(httpServer) {
   const io = new Server(httpServer, {});
 
   io.use(async (socket, next) => {
-    const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
-
-    if (!cookies.token) {
-      return next(new Error("Authentication error"));
-    }
-
     try {
+      const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
+      if (!cookies.token) return next(new Error("Authentication error"));
+
       const decoded = jwt.verify(cookies.token, process.env.JWT_SECRETKEY);
       const user = await userModel.findById(decoded.id);
-
-      if (!user) {
-        return next(new Error("Authentication error"));
-      }
+      if (!user) return next(new Error("Authentication error"));
 
       socket.user = user;
       next();
-    } catch (err) {
-      return next(new Error("Authentication error"));
+    } catch {
+      next(new Error("Authentication error"));
     }
   });
 
@@ -46,21 +40,22 @@ function initSocketServer(httpServer) {
         });
 
         const vectors = await aiService.generateVector(messagePayload.content);
-         const memory = await queryMemory({
+
+        const memory = await queryMemory({
           queryVector: vectors,
           limit: 3,
-          metadata: {}
-        })
-        console.log(memory)
+          metadata: {},
+        });
+
         await createMemory({
           vectors,
           messageId: message._id,
-          metadata : {
+          metadata: {
             chat: messagePayload.chat,
             user: socket.user._id,
-            text: messagePayload.content
-          }
-        })
+            text: messagePayload.content,
+          },
+        });
 
         const chatHistory = (
           await messageModel
@@ -70,9 +65,27 @@ function initSocketServer(httpServer) {
             .lean()
         ).reverse();
 
-        const response = await aiService.generateResponse(chatHistory);
+        const stm = chatHistory.map((item) => ({
+          role: item.role === "model" ? "assistant" : "user",
+          content: item.content,
+        }));
 
-       const responseMessage =  await messageModel.create({
+       const ltm = memory.length
+  ? [
+      {
+        role: "system",
+        content:
+          "The following are relevant past messages from this conversation. " +
+          "Use them only as background knowledge. Do not repeat them unless necessary.\n\n" +
+          memory.map((m) => m.metadata.text).join("\n"),
+      },
+    ]
+  : [];
+
+        const messages = [...ltm, ...stm];
+        const response = await aiService.generateResponse(messages);
+
+        const responseMessage = await messageModel.create({
           chat: messagePayload.chat,
           user: socket.user._id,
           content: response,
@@ -81,14 +94,14 @@ function initSocketServer(httpServer) {
 
         const responseVectors = await aiService.generateVector(response);
         await createMemory({
-          vectors:responseVectors,
+          vectors: responseVectors,
           messageId: responseMessage._id,
-          metadata : {
-            chat : messagePayload.chat,
-            user : socket.user._id,
-            text : response
-          }
-        })
+          metadata: {
+            chat: messagePayload.chat,
+            user: socket.user._id,
+            text: response,
+          },
+        });
 
         socket.emit("ai-response", {
           content: response,
