@@ -1,0 +1,144 @@
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const Register = () => {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    firstname: "",
+    lastname: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        fullname: {
+          firstname: formData.firstname,
+          lastname: formData.lastname,
+        },
+      };
+
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/register",
+        payload,
+        { withCredentials: true }
+      );
+
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4">
+      <div className="bg-[#020617] w-full max-w-md rounded-xl shadow-xl p-8 border border-blue-900">
+        <h2 className="text-3xl font-bold text-center text-white">
+          Create Account
+        </h2>
+
+        {error && (
+          <p className="mt-4 text-center text-sm text-red-500">{error}</p>
+        )}
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <div>
+            <label className="block text-sm text-gray-300">
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="mt-1 w-full rounded-lg bg-[#020617] border border-gray-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-300">
+                First Name
+              </label>
+              <input
+                type="text"
+                name="firstname"
+                value={formData.firstname}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded-lg bg-[#020617] border border-gray-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-300">
+                Last Name
+              </label>
+              <input
+                type="text"
+                name="lastname"
+                value={formData.lastname}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded-lg bg-[#020617] border border-gray-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-300">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="mt-1 w-full rounded-lg bg-[#020617] border border-gray-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-2 rounded-lg transition"
+          >
+            {loading ? "Creating account..." : "Register"}
+          </button>
+        </form>
+
+        <p className="text-center text-sm text-gray-400 mt-6">
+          Already have an account?
+          <Link to="/login" className="text-blue-500 hover:underline ml-1">
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Register;
