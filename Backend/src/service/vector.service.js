@@ -1,27 +1,52 @@
-// Import the Pinecone library
-const { Pinecone } =  require('@pinecone-database/pinecone')
-require('dotenv').config();
+require("dotenv").config();
+const { Pinecone } = require("@pinecone-database/pinecone");
 
-// Initialize a Pinecone client with your API key
-const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-const chatai = pc.Index(process.env.PINECONE_INDEX);
+const pc = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY,
+});
 
-async function createMemory({vectors, metadata, messageId}){
-    await chatai.upsert([{
-        id : messageId,
+const index = pc.Index(process.env.PINECONE_INDEX);
+
+async function createMemory({ vectors, metadata, messageId }) {
+  try {
+    if (!vectors || !Array.isArray(vectors)) {
+      console.warn("⚠️ Pinecone skipped: Invalid vectors");
+      return;
+    }
+
+    await index.upsert([
+      {
+        id: messageId.toString(),
         values: vectors,
-        metadata
-    }])
+        metadata,
+      },
+    ]);
+  } catch (error) {
+    console.error("Pinecone upsert failed:", error.message);
+  }
 }
 
-async function queryMemory({queryVector , limit = 5 , metadata}){
-    const data = await chatai.query({
-        vector : queryVector,
-        topK: limit, // number of most similar vectors to return from Pinecone
-        filter: metadata ? metadata : undefined,
-        includeMetadata: true
-    })
-    return data.matches;
+async function queryMemory({ queryVector, limit = 5, metadata }) {
+  try {
+    if (!queryVector || !Array.isArray(queryVector)) {
+      return [];
+    }
+
+    const result = await index.query({
+      vector: queryVector,
+      topK: limit,
+      filter: metadata || undefined,
+      includeMetadata: true,
+    });
+
+    return result.matches || [];
+  } catch (error) {
+    console.error("Pinecone query failed:", error.message);
+    return [];
+  }
 }
 
-module.exports = { createMemory , queryMemory };
+module.exports = {
+  createMemory,
+  queryMemory,
+};

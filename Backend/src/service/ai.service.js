@@ -13,7 +13,8 @@ async function generateResponse(chatHistory) {
     const messages = [
       {
         role: "system",
-        content: "You are a helpful AI assistant. Provide clear, accurate, and friendly responses.",
+        content:
+          "You are a helpful AI assistant. Provide clear, accurate, and friendly responses.",
       },
     ];
 
@@ -45,9 +46,11 @@ async function generateVector(content) {
       inputs: content,
     });
 
+    if (!embedding || !Array.isArray(embedding)) return null;
+
     return embedding;
   } catch (error) {
-    console.error(error);
+    console.error("❌ Vector generation failed:", error.message);
     return null;
   }
 }
@@ -56,4 +59,3 @@ module.exports = {
   generateResponse,
   generateVector,
 };
- 
