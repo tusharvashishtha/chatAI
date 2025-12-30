@@ -4,8 +4,8 @@ const jwt = require("jsonwebtoken");
 
 const cookieOptions = {
   httpOnly: true,
-  sameSite: "lax",
-  secure: false,
+  secure: true,      // ✅ REQUIRED on Render / HTTPS
+  sameSite: "none",  // ✅ REQUIRED for cross-site cookies
 };
 
 async function registeruser(req, res) {

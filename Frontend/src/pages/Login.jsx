@@ -8,36 +8,44 @@ const Login = () => {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-
-    api
-      .post("/api/auth/login", form)
-      .then(() => navigate("/"))
-      .finally(() => setSubmitting(false));
+    try {
+      await api.post("/api/auth/login", form);
+      navigate("/", { replace: true });
+    } catch {
+      alert("Invalid email or password");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="center-min-h-screen">
       <div className="auth-wrapper">
-        <div className="auth-title">Sign in to continue</div>
+        <div className="auth-title">Sign in to your account</div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <input
+            type="email"
             placeholder="Email"
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
           />
           <input
             type="password"
             placeholder="Password"
             onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
           />
-          <button disabled={submitting}>Login</button>
+          <button disabled={submitting}>
+            {submitting ? "Signing in..." : "Login"}
+          </button>
         </form>
 
         <div className="auth-footer">
-          New here? <Link to="/register">Create an account</Link>
+          Don’t have an account? <Link to="/register">Register</Link>
         </div>
       </div>
     </div>

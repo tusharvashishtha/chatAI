@@ -13,43 +13,50 @@ const Register = () => {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    api
-      .post("/api/auth/register", {
+    try {
+      await api.post("/api/auth/register", {
         email: form.email,
         fullname: {
           firstname: form.firstname,
           lastname: form.lastname,
         },
         password: form.password,
-      })
-      .then(() => navigate("/"));
+      });
+      navigate("/", { replace: true });
+    } catch {
+      alert("Registration failed");
+    }
   };
 
   return (
     <div className="center-min-h-screen">
       <div className="auth-wrapper">
-        <div className="auth-title">Create a new account</div>
+        <div className="auth-title">Create your account</div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <input
+            type="email"
             placeholder="Email"
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
           />
           <input
             placeholder="First name"
             onChange={(e) => setForm({ ...form, firstname: e.target.value })}
+            required
           />
           <input
             placeholder="Last name"
             onChange={(e) => setForm({ ...form, lastname: e.target.value })}
+            required
           />
           <input
             type="password"
             placeholder="Password"
             onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
           />
           <button>Register</button>
         </form>
