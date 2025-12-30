@@ -42,8 +42,8 @@ const ChatSidebar = ({
   return (
     <aside className={`chat-sidebar ${open ? "open" : ""}`}>
       <div className="sidebar-header">
-        <h2>Chats</h2>
-        <button className="small-btn" onClick={onNewChat}>New</button>
+        <h2 className="sidebar-title">Aiva</h2>
+        <button className="small-btn" onClick={onNewChat}>+</button>
       </div>
 
       <nav className="chat-list">
@@ -76,10 +76,7 @@ const ChatSidebar = ({
             )}
 
             <div className="chat-menu-wrapper">
-              <button
-                className="menu-btn"
-                onClick={(e) => openMenu(e, c)}
-              >
+              <button className="menu-btn" onClick={(e) => openMenu(e, c)}>
                 ⋮
               </button>
             </div>
@@ -93,11 +90,7 @@ const ChatSidebar = ({
           style={{ top: menuPos.top, left: menuPos.left }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={() =>
-              startRename(chats.find((c) => c._id === menuChatId))
-            }
-          >
+          <button onClick={() => startRename(chats.find(c => c._id === menuChatId))}>
             Rename
           </button>
           <button

@@ -7,6 +7,7 @@
     flex-direction: column;
     gap: var(--space-5);
     max-width: 820px;
+
 }
 
 .messages::-webkit-scrollbar{
@@ -33,9 +34,8 @@
     font-weight: 600;
 }
 
-/* Bubble styling refined */
 .msg-bubble {
-    padding: var(--space-4) var(--space-5);
+    padding: var(--space-3) var(--space-5);
     border: 1px solid var(--color-border);
     background: var(--color-bg-alt);
     border-radius: 14px;
@@ -57,9 +57,8 @@
 }
 
 .msg-ai .msg-bubble {
-    background: #0d0d0d;
-    border-color: #1e1e1e;
-}
+    background: #191A1A;
+border-color: #333534;}
 
 .msg-ai.pending .msg-bubble {
     display: inline-flex;
@@ -91,8 +90,8 @@
 .msg-actions button {
     width: 30px;
     height: 30px;
-    background: #0d0d0d;
-    border: 1px solid #1e1e1e;
+    background: #191A1A;
+    border: 1px solid #191A1A;
     display: inline-flex;
     align-items: center;
     justify-content: center;

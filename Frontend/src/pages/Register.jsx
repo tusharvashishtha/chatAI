@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
+import "./register.css";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -29,13 +30,34 @@ const Register = () => {
 
   return (
     <div className="center-min-h-screen">
-      <form onSubmit={handleSubmit}>
-        <input onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <input onChange={(e) => setForm({ ...form, firstname: e.target.value })} />
-        <input onChange={(e) => setForm({ ...form, lastname: e.target.value })} />
-        <input type="password" onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        <button>Register</button>
-      </form>
+      <div className="auth-wrapper">
+        <div className="auth-title">Create a new account</div>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <input
+            placeholder="Email"
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+          <input
+            placeholder="First name"
+            onChange={(e) => setForm({ ...form, firstname: e.target.value })}
+          />
+          <input
+            placeholder="Last name"
+            onChange={(e) => setForm({ ...form, lastname: e.target.value })}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+          <button>Register</button>
+        </form>
+
+        <div className="auth-footer">
+          Already have an account? <Link to="/login">Login</Link>
+        </div>
+      </div>
     </div>
   );
 };

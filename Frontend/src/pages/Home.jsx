@@ -7,6 +7,7 @@ import ChatComposer from "../components/chat/ChatComposer.jsx";
 import "../components/chat/ChatLayout.css";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../api/api";
+
 import {
   startNewChat,
   selectChat,
@@ -25,7 +26,9 @@ const Home = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [socket, setSocket] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [messagesByChat, setMessagesByChat] = useState({});
+
+  const messages = messagesByChat[activeChatId] || [];
 
   useEffect(() => {
     api.get("/api/chat").then((res) => {
@@ -37,8 +40,11 @@ const Home = () => {
       transports: ["websocket"],
     });
 
-    s.on("ai-response", (payload) => {
-      setMessages((m) => [...m, { type: "ai", content: payload.content }]);
+    s.on("ai-response", ({ chat, content }) => {
+      setMessagesByChat((prev) => ({
+        ...prev,
+        [chat]: [...(prev[chat] || []), { type: "ai", content }],
+      }));
       dispatch(sendingFinished());
     });
 
@@ -50,52 +56,51 @@ const Home = () => {
     const res = await api.post("/api/chat", { title: "New Chat" });
     dispatch(startNewChat(res.data.chat));
     dispatch(selectChat(res.data.chat._id));
-    setMessages([]);
     setSidebarOpen(false);
   };
 
   const handleDeleteChat = async (id) => {
     await api.delete(`/api/chat/${id}`);
     dispatch(setChats(chats.filter((c) => c._id !== id)));
-
-    if (id === activeChatId) {
-      dispatch(selectChat(null));
-      setMessages([]);
-    }
+    setMessagesByChat((prev) => {
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    });
+    if (id === activeChatId) dispatch(selectChat(null));
   };
 
- const handleRenameChat = async (id, title) => {
-  const res = await api.put(`/api/chat/${id}`, { title });
-  dispatch(
-    setChats(
-      chats.map((c) =>
-        c._id === id ? res.data.chat : c
-      )
-    )
-  );
-};
+  const handleRenameChat = async (id, title) => {
+    const res = await api.put(`/api/chat/${id}`, { title });
+    dispatch(setChats(chats.map((c) => (c._id === id ? res.data.chat : c))));
+  };
 
   const getMessages = async (id) => {
     const res = await api.get(`/api/chat/${id}/messages`);
-    setMessages(
-      res.data.messages.map((m) => ({
+    setMessagesByChat((prev) => ({
+      ...prev,
+      [id]: res.data.messages.map((m) => ({
         type: m.role === "user" ? "user" : "ai",
         content: m.content,
-      }))
-    );
+      })),
+    }));
   };
 
   const sendMessage = () => {
     if (!input.trim() || !activeChatId || isSending) return;
 
     dispatch(sendingStarted());
-    setMessages((m) => [...m, { type: "user", content: input }]);
-    dispatch(setInput(""));
 
-    socket.emit("ai-message", {
-      chat: activeChatId,
-      content: input,
-    });
+    setMessagesByChat((prev) => ({
+      ...prev,
+      [activeChatId]: [
+        ...(prev[activeChatId] || []),
+        { type: "user", content: input },
+      ],
+    }));
+
+    dispatch(setInput(""));
+    socket.emit("ai-message", { chat: activeChatId, content: input });
   };
 
   return (
@@ -104,6 +109,7 @@ const Home = () => {
         onToggleSidebar={() => setSidebarOpen((o) => !o)}
         onNewChat={handleNewChat}
       />
+
       <ChatSidebar
         chats={chats}
         activeChatId={activeChatId}
@@ -117,13 +123,19 @@ const Home = () => {
         onNewChat={handleNewChat}
         open={sidebarOpen}
       />
+
       <main className="chat-main">
-        {messages.length === 0 && (
+        {messages.length === 0 && !isSending && (
           <div className="chat-welcome">
-            <h1>Aiva+</h1>
+            <h1>
+              Ai<span>va</span>
+            </h1>
+            <p className="chat-subtitle">How can I help you?</p>
           </div>
         )}
+
         <ChatMessages messages={messages} isSending={isSending} />
+
         {activeChatId && (
           <ChatComposer
             input={input}

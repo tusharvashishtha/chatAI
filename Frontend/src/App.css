@@ -1,5 +1,9 @@
 @import url('./styles/theme.css');
-
+@import "tailwindcss";
+/* #191A1A */
+/* #868885 */
+/* #868885 */
+/* #1F2121 */
 * {
   box-sizing: border-box;
 }
@@ -7,6 +11,23 @@
 html,
 body {
   height: 100%;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 140, 140, 0.35);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(180, 180, 180, 0.6);
 }
 
 body {
@@ -188,3 +209,23 @@ input,
 button {
   transition: background-color .3s, color .3s, border-color .3s;
 }
+
+@font-face {
+  font-family: font1;
+  src: url("../src/assets/GreaterTheory.otf");
+}
+@font-face {
+  font-family: font2;
+  src: url("../src/assets/Inter_18pt-Black.ttf");
+}
+@font-face {
+  font-family: font3;
+  src: url("../src/assets/SpaceGrotesk-Bold.ttf");
+}
+
+.chat-welcome{
+  font-family: font1;
+  
+}
+
+
