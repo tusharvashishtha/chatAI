@@ -1,16 +1,29 @@
-import { useState } from 'react'
+import { Routes, Route, Navigate } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
-import './App.css'
-import AppRoutes from './AppRoutes'
-
-function App() {
-
-
+const AppRoutes = () => {
   return (
-    <>
-      <AppRoutes />
-    </>
-  )
-}
+    <Routes>
+    
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-export default App
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch all */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;

@@ -4,8 +4,8 @@ const jwt = require("jsonwebtoken");
 
 const cookieOptions = {
   httpOnly: true,
-  sameSite: "lax",  
-  secure: false,    
+  sameSite: "lax",
+  secure: false,
 };
 
 async function registeruser(req, res) {
@@ -24,10 +24,7 @@ async function registeruser(req, res) {
 
   const user = await userModel.create({
     email,
-    fullname: {
-      firstname,
-      lastname,
-    },
+    fullname: { firstname, lastname },
     password: hashPassword,
   });
 
@@ -37,14 +34,12 @@ async function registeruser(req, res) {
     { expiresIn: "7d" }
   );
 
-
   res.cookie("token", token, cookieOptions);
 
   res.status(201).json({
-    message: "User registered successfully",
     user: {
-      email: user.email,
       _id: user._id,
+      email: user.email,
       fullname: user.fullname,
     },
   });
@@ -69,14 +64,12 @@ async function loginuser(req, res) {
     { expiresIn: "7d" }
   );
 
-
   res.cookie("token", token, cookieOptions);
 
   res.status(200).json({
-    message: "User logged in successfully",
     user: {
-      email: user.email,
       _id: user._id,
+      email: user.email,
       fullname: user.fullname,
     },
   });

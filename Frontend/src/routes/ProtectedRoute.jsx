@@ -7,7 +7,8 @@ const ProtectedRoute = ({ children }) => {
   const [auth, setAuth] = useState(false);
 
   useEffect(() => {
-    api.get("/api/chat")
+    api
+      .get("/api/auth/me")
       .then(() => setAuth(true))
       .catch(() => setAuth(false))
       .finally(() => setLoading(false));
