@@ -35,7 +35,7 @@ const Home = () => {
       dispatch(setChats(res.data.chats.reverse()));
     });
 
-    const s = io("http://localhost:3000", {
+    const s = io("https://chatai-123g.onrender.com", {
       withCredentials: true,
       transports: ["websocket"],
     });
