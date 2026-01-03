@@ -47,7 +47,7 @@ const ChatMessages = ({ messages, isSending }) => {
           </div>
           <div className="msg-actions">
             <button onClick={() => navigator.clipboard.writeText(m.content)}>
-              Copy
+              ❐ 
             </button>
           </div>
         </div>
