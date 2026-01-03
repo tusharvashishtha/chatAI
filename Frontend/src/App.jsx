@@ -1,29 +1,14 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ProtectedRoute from "./routes/ProtectedRoute";
+import AppRoutes from "./AppRoutes";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const AppRoutes = () => {
+const App = () => {
   return (
-    <Routes>
-    
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Catch all */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+    <>
+      <AppRoutes />
+      <ToastContainer theme="dark" position="top-right" autoClose={3000} />
+    </>
   );
 };
 
-export default AppRoutes;
+export default App;

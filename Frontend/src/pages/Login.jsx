@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
+import { toast } from "react-toastify";
 import "./login.css";
 
 const Login = () => {
@@ -11,11 +12,14 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+
     try {
       await api.post("/api/auth/login", form);
       navigate("/", { replace: true });
-    } catch {
-      alert("Invalid email or password");
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || "Invalid email or password";
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
+import { toast } from "react-toastify";
 import "./register.css";
 
 const Register = () => {
@@ -15,6 +16,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       await api.post("/api/auth/register", {
         email: form.email,
@@ -25,8 +27,10 @@ const Register = () => {
         password: form.password,
       });
       navigate("/", { replace: true });
-    } catch {
-      alert("Registration failed");
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || "Registration failed";
+      toast.error(message);
     }
   };
 
