@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import loader from "../assets/loader.gif";
 
 const ProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
@@ -16,8 +17,17 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div style={{ color: "white", textAlign: "center", marginTop: "40vh" , overflow: "hidden"}}>
-        Checking authentication...
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#0f0f0f",
+          overflow: "hidden",
+        }}
+      >
+        <img src={loader} alt="loader" />
       </div>
     );
   }
