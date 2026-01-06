@@ -14,8 +14,17 @@ const ProtectedRoute = ({ children }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return null;
-  if (!auth) return <Navigate to="/login" replace />;
+  if (loading) {
+    return (
+      <div style={{ color: "white", textAlign: "center", marginTop: "40vh" , overflow: "hidden"}}>
+        Checking authentication...
+      </div>
+    );
+  }
+
+  if (!auth) {
+    return <Navigate to="/login" replace />;
+  }
 
   return children;
 };
