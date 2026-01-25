@@ -35,7 +35,7 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full h-screen flex bg-black">
+    <div className="w-full h-screen flex bg-[#191A1A]">
       <div className="h-full w-1/2">
         <img
           src="https://w.wallhaven.cc/full/4v/wallhaven-4v2535.jpg"

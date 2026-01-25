@@ -25,7 +25,7 @@ const Login = () => {
     }
   };
 return (
-  <div className="w-full h-screen flex bg-black">
+  <div className="w-full h-screen flex bg-[#191A1A]">
     {/* LEFT IMAGE SIDE */}
     <div className="h-full w-1/2">
       <img
